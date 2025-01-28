@@ -1,23 +1,25 @@
-package com.encryption.app.utils.encryption;
+package com.encryption.app.service.encryption;
 
 import javax.crypto.Cipher;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class EncryptionServiceAesCtr implements EncryptionService {
-
-    private final String ENCRYPTION_ALGORITHM = "PBKDF2WithHmacSHA256";
-    private final int KEY_SIZE = 256; // Размер ключа 256 бит
-    private final int ITERATIONS = 65536; // Количество итераций для KDF
-    private final int SALT_SIZE = 16; // Размер соли
-    private final int NONCE_SIZE = 16; // Размер nonce (счётчика)
+public class EncryptionServiceAesGcm implements EncryptionService {
 
     private final SaltNonceStreamHandler saltNonceStreamHandler;
+
+    private final String ENCRYPTION_ALGORITHM = "PBKDF2WithHmacSHA256";
+    private final int KEY_SIZE = 256;       // Размер ключа 256 бит
+    private final int ITERATIONS = 65536;   // Количество итераций для KDF
+    private final int SALT_SIZE = 16;       // Размер соли
+    // Для GCM обычно 12 байт IV (nonce) — рекомендуемый стандарт,
+    // но если хочешь оставить 16 байт, можно и так.
+    private final int NONCE_SIZE = 12;
 
     private final CipherKeyGenerator cipherKeyGenerator =
             new CipherKeyGenerator(ENCRYPTION_ALGORITHM, CipherMode.GCM, ITERATIONS, KEY_SIZE, SALT_SIZE, NONCE_SIZE);
 
-    public EncryptionServiceAesCtr(SaltNonceStreamHandler saltNonceStreamHandler) {
+    public EncryptionServiceAesGcm(SaltNonceStreamHandler saltNonceStreamHandler) {
         this.saltNonceStreamHandler = saltNonceStreamHandler;
     }
 

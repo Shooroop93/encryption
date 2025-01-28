@@ -1,6 +1,6 @@
-package com.encryption.app.utils.file;
+package com.encryption.app.service.file;
 
-import com.encryption.app.utils.encryption.EncryptionService;
+import com.encryption.app.service.encryption.EncryptionService;
 
 import java.io.File;
 import java.io.FileInputStream;

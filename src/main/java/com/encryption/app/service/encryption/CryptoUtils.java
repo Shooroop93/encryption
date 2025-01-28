@@ -1,4 +1,4 @@
-package com.encryption.app.utils.encryption;
+package com.encryption.app.service.encryption;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
