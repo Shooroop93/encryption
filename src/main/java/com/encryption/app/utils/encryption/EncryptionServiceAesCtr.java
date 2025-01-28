@@ -1,8 +1,6 @@
 package com.encryption.app.utils.encryption;
 
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -10,6 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class EncryptionServiceAesCtr implements EncryptionService {
+
+    private final SaltNonceStreamHandler saltNonceStreamHandler;
 
     private final String ALGORITHM = "AES";
     private final String CIPHER_ALGORITHM = "AES/CTR/NoPadding";
@@ -19,6 +19,9 @@ public class EncryptionServiceAesCtr implements EncryptionService {
     private final int SALT_SIZE = 16; // Размер соли
     private final int NONCE_SIZE = 16; // Размер nonce (счётчика)
 
+    public EncryptionServiceAesCtr(SaltNonceStreamHandler saltNonceStreamHandler) {
+        this.saltNonceStreamHandler = saltNonceStreamHandler;
+    }
 
     @Override
     public void encrypt(InputStream in, OutputStream out, String password) throws Exception {
@@ -33,43 +36,28 @@ public class EncryptionServiceAesCtr implements EncryptionService {
         // Настраиваем шифр
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(nonce));
-        // 1) Запишем соль
-        out.write(salt);
-        // 2) Запишем nonce
-        out.write(nonce);
-        try (CipherOutputStream cos = new CipherOutputStream(out, cipher)) {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                cos.write(buffer, 0, bytesRead);
-            }
-        }
+
+        saltNonceStreamHandler.encryptStream(in, out, cipher, salt, nonce);
     }
 
     @Override
     public void decrypt(InputStream in, OutputStream out, String password) throws Exception {
-        // 1) Считываем соль
+        // Считываем соль
         byte[] salt = new byte[SALT_SIZE];
         in.read(salt);
 
-        // 2) Считываем nonce
+        // Считываем nonce
         byte[] nonce = new byte[NONCE_SIZE];
         in.read(nonce);
 
-        // 3) Генерируем тот же ключ
+        // Генерируем тот же ключ
         SecretKey rawKey = CryptoUtils.generateKeyFromPassword(ENCRYPTION_ALGORITHM, password, ITERATIONS, KEY_SIZE, salt);
         SecretKeySpec keySpec = new SecretKeySpec(rawKey.getEncoded(), ALGORITHM);
 
-        // 4) Настраиваем шифр на расшифрование
+        // Настраиваем шифр на расшифрование
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(nonce));
 
-        try (CipherInputStream cis = new CipherInputStream(in, cipher)) {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = cis.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-        }
+        saltNonceStreamHandler.decryptStream(in, out, cipher);
     }
 }
