@@ -1,6 +1,6 @@
 package com.encryption.app.service.encryption;
 
-import com.encryption.app.error.ErrorEncryptionException;
+import com.encryption.app.error.EncryptionException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.SecretKey;
@@ -22,9 +22,9 @@ public class CryptoUtils {
                                                     String password,
                                                     int iterations,
                                                     int keySize,
-                                                    byte... salt) throws ErrorEncryptionException {
+                                                    byte... salt) throws EncryptionException {
         if (Objects.isNull(password) || password.isEmpty()) {
-            throw new ErrorEncryptionException("Password cannot be null or empty");
+            throw new EncryptionException("Password cannot be null or empty");
         }
 
         log.info("Generate key from password");
@@ -34,9 +34,9 @@ public class CryptoUtils {
             factory = SecretKeyFactory.getInstance(encryptionAlgorithm);
             return factory.generateSecret(spec);
         } catch (NoSuchAlgorithmException e) {
-            throw new ErrorEncryptionException(format("algorithm %s is missing", encryptionAlgorithm), e);
+            throw new EncryptionException(format("algorithm %s is missing", encryptionAlgorithm), e);
         } catch (InvalidKeySpecException e) {
-            throw new ErrorEncryptionException("key specification is inappropriate for this secret-key factory to produce a secret key", e);
+            throw new EncryptionException("key specification is inappropriate for this secret-key factory to produce a secret key", e);
         }
     }
 
