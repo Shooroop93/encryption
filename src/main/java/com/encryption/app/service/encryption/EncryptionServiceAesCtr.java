@@ -19,7 +19,7 @@ public class EncryptionServiceAesCtr implements EncryptionService {
     private final SaltNonceStreamHandler saltNonceStreamHandler;
 
     private final CipherKeyGenerator cipherKeyGenerator =
-            new CipherKeyGenerator(ENCRYPTION_ALGORITHM, CipherMode.GCM, ITERATIONS, KEY_SIZE, SALT_SIZE, NONCE_SIZE, CIPHER_PROVIDER);
+            new CipherKeyGenerator(ENCRYPTION_ALGORITHM, CipherMode.CTR, ITERATIONS, KEY_SIZE, SALT_SIZE, NONCE_SIZE, CIPHER_PROVIDER);
 
     public EncryptionServiceAesCtr(SaltNonceStreamHandler saltNonceStreamHandler) {
         this.saltNonceStreamHandler = saltNonceStreamHandler;
