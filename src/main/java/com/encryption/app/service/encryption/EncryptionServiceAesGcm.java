@@ -1,5 +1,7 @@
 package com.encryption.app.service.encryption;
 
+import com.encryption.app.error.ErrorEncryptionException;
+
 import javax.crypto.Cipher;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,13 +26,13 @@ public class EncryptionServiceAesGcm implements EncryptionService {
     }
 
     @Override
-    public void encrypt(InputStream in, OutputStream out, String password) throws Exception {
+    public void encrypt(InputStream in, OutputStream out, String password) throws ErrorEncryptionException {
         CipherSetup cipherSetup = cipherKeyGenerator.generateCipherSetup(password, Cipher.ENCRYPT_MODE);
         saltNonceStreamHandler.encryptStream(in, out, cipherSetup.cipher(), cipherSetup.salt(), cipherSetup.nonce());
     }
 
     @Override
-    public void decrypt(InputStream in, OutputStream out, String password) throws Exception {
+    public void decrypt(InputStream in, OutputStream out, String password) throws ErrorEncryptionException {
         CipherSetup cipherSetup = cipherKeyGenerator.loadCipherSetupForDecryption(in, password);
         saltNonceStreamHandler.decryptStream(in, out, cipherSetup.cipher());
     }
