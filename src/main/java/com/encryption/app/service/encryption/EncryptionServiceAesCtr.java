@@ -27,9 +27,13 @@ public class EncryptionServiceAesCtr implements EncryptionService {
 
     @Override
     public void encrypt(InputStream in, OutputStream out, String password) throws EncryptionException {
+        if (Objects.isNull(in)|| Objects.isNull(out)) {
+            throw new EncryptionException("Streams cannot be null");
+        }
         if (Objects.isNull(password) || password.isEmpty()) {
             throw new EncryptionException("Password cannot be null or empty");
         }
+
         CipherSetup cipherSetup = cipherKeyGenerator.generateCipherSetup(password, Cipher.ENCRYPT_MODE);
         saltNonceStreamHandler.encryptStream(in, out, cipherSetup.cipher(), cipherSetup.salt(), cipherSetup.nonce());
     }
