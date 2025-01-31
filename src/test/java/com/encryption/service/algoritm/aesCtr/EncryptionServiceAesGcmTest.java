@@ -3,8 +3,7 @@ package com.encryption.service.algoritm.aesCtr;
 import com.encryption.app.error.EncryptionException;
 import com.encryption.app.service.encryption.DefaultSaltNonceStreamHandler;
 import com.encryption.app.service.encryption.EncryptionService;
-import com.encryption.app.service.encryption.EncryptionServiceAesCtr;
-import com.encryption.app.utils.manualTesting.DestroyStream;
+import com.encryption.app.service.encryption.EncryptionServiceAesGcm;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,13 +18,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.UUID;
 
-public class EncryptionServiceAesCtrTest {
-
+public class EncryptionServiceAesGcmTest {
     protected EncryptionService encryptionService;
 
     @BeforeEach
     public void createNewEncryptionServiceAesCtr() {
-        encryptionService = new EncryptionServiceAesCtr(new DefaultSaltNonceStreamHandler());
+        encryptionService = new EncryptionServiceAesGcm(new DefaultSaltNonceStreamHandler());
     }
 
     @Test
@@ -105,34 +103,6 @@ public class EncryptionServiceAesCtrTest {
     }
 
     @Test
-    public void destroyDecryptServiceStreamTest() throws EncryptionException {
-        String password = UUID.randomUUID().toString();
-        String text = UUID.randomUUID().toString();
-
-        byte[] resultEncryptStream = encryptStream(text, password);
-
-        int idx = resultEncryptStream.length / 2;
-        resultEncryptStream[idx] ^= 0xFF;
-
-        byte[] resultDecryptStream = decryptStream(resultEncryptStream, password);
-
-        Assertions.assertNotEquals(text, new String(resultDecryptStream, StandardCharsets.UTF_8));
-    }
-
-    @Test
-    public void testDecryptWithWrongPasswordGcmThrows() throws EncryptionException {
-        String password = UUID.randomUUID().toString();
-        String text = UUID.randomUUID().toString();
-
-        byte[] resultEncryptStream = encryptStream(text, password);
-
-        byte[] resultDecryptStream = decryptStream(resultEncryptStream, "qwerty12345");
-
-        Assertions.assertNotEquals(text, new String(resultEncryptStream, StandardCharsets.UTF_8));
-        Assertions.assertNotEquals(text, new String(resultDecryptStream, StandardCharsets.UTF_8));
-    }
-
-    @Test
     public void testUtf8Encoding() throws EncryptionException {
         String originalText = "Hello 世界! Привет мир! こんにちは世界!";
 
@@ -174,6 +144,32 @@ public class EncryptionServiceAesCtrTest {
                 decryptedText,
                 "The text after encryption/decryption in encoding " + encodingName + " must match the original text"
         );
+    }
+
+    @Test
+    public void destroyDecryptServiceStreamTest() throws EncryptionException {
+        String text = "Test Testov Test";
+        String password = "qwerty12345";
+
+        byte[] encrypted = encryptStream(text, password);
+        int idx = encrypted.length / 2;
+        encrypted[idx] ^= 0xFF;
+
+        Assertions.assertThrows(EncryptionException.class, () -> {
+            decryptStream(encrypted, password);
+        }, "AES-GCM must fail with exception on corrupted data");
+    }
+
+    @Test
+    public void testDecryptWithWrongPasswordGcmThrows() throws EncryptionException {
+        String password = UUID.randomUUID().toString();
+        String text = UUID.randomUUID().toString();
+
+        byte[] resultEncryptStream = encryptStream(text, password);
+
+        Assertions.assertThrows(EncryptionException.class, () -> {
+            decryptStream(resultEncryptStream, "qwerty12345");
+        });
     }
 
     @Test
