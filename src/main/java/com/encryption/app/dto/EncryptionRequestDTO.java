@@ -13,4 +13,5 @@ public class EncryptionRequestDTO {
     private String encryptionPathFolder;
     private List<String> pathFile;
     private String password;
+    private int countThread;
 }
